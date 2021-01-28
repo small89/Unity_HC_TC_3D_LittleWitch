@@ -31481,8 +31481,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60e731c11a0cc804da752c8fd25b82f1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 500
+  speed: 400
   jump: 10
+  turn: 60
+  camLimit: {x: -30, y: 0}
 --- !u!4 &8310417220162286906
 Transform:
   m_ObjectHideFlags: 0
