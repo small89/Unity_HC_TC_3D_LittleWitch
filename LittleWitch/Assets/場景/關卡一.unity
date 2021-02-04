@@ -18726,6 +18726,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: "\u5730\u677F_A (3)"
       objectReference: {fileID: 0}
+    - target: {fileID: 100000, guid: b2f96746c6005c64888263f64272a556, type: 3}
+      propertyPath: m_Layer
+      value: 8
+      objectReference: {fileID: 0}
     - target: {fileID: 400000, guid: b2f96746c6005c64888263f64272a556, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -31488,6 +31492,7 @@ MonoBehaviour:
   turnSpeed: 10
   radius: 0.2
   offset: {x: 0, y: 0, z: 0}
+  jumpCountLimit: 2
 --- !u!4 &8310417220162286906
 Transform:
   m_ObjectHideFlags: 0

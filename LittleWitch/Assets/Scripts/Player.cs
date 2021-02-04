@@ -11,12 +11,16 @@ public class Player : MonoBehaviour
     [Header("攝影機角度限制")]
     public Vector2 camLimit = new Vector2(-30, 0);
     [Header("角色旋轉速度"), Range(0, 1000)]
-    public float turnSpeed = 10;
+    public float turnSpeed = 30;
     [Header("檢查地板球體半徑")]
     public float radius = 1f;
     [Header("檢查地板球體位移")]
     public Vector3 offset;
 
+    [Header("跳躍次數限制")]
+    public int jumpCountLimit = 2;
+
+    private int jumpCount = 0;
     /// <summary>
     /// 是否在地面上
     /// </summary>
@@ -90,10 +94,24 @@ public class Player : MonoBehaviour
     /// </summary>
     private void Jump()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && isGround)    // 如果 按下 空白建 並且 在地面上
+        if (Input.GetKeyDown(KeyCode.Space) && jumpCount < jumpCountLimit)    // 如果 按下 空白建 並且 在地面上
         {
-            isGround = false;                               // 不在地面上
+            jumpCount++;
+            rig.Sleep();
+            rig.WakeUp();
             rig.AddForce(Vector3.up * jump);                // 推力
+            ani.SetTrigger("跳躍觸發");
         }
+
+        Collider[] hit = Physics.OverlapSphere(transform.position + offset, radius, 1 << 8);
+
+        if (hit.Length > 0 && hit[0])
+        {
+            isGround = true;
+            jumpCount = 0;
+        }
+        else isGround = false;
+
+        ani.SetBool("是否在地面上",isGround);
     }
 }
