@@ -6,20 +6,32 @@ public class Player : MonoBehaviour
     public float speed = 10;
     [Header("跳躍高度"), Range(0, 1000)]
     public float jump = 10;
-    [Header("旋轉速度"), Range(0, 1000)]
+    [Header("攝影機旋轉速度"), Range(0, 1000)]
     public float turn = 10;
     [Header("攝影機角度限制")]
     public Vector2 camLimit = new Vector2(-30, 0);
+    [Header("角色旋轉速度"), Range(0, 1000)]
+    public float turnSpeed = 10;
+    [Header("檢查地板球體半徑")]
+    public float radius = 1f;
+    [Header("檢查地板球體位移")]
+    public Vector3 offset;
 
     /// <summary>
     /// 是否在地面上
     /// </summary>
-    private bool isGround;
+    private bool isGround = true;
     private Animator ani;
     private Rigidbody rig;
     private Transform cam;
     private float x;
     private float y;
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = new Color(1, 0, 0, 0.5f);
+        Gizmos.DrawSphere(transform.position + offset, radius);
+    }
 
     //喚醒事件：在 Start 前執行一次
     private void Awake()
@@ -36,6 +48,14 @@ public class Player : MonoBehaviour
     }
 
     /// <summary>
+    /// 固定更新事件：50FPS
+    /// </summary>
+    private void FixedUpdate()
+    {
+        Jump();
+    }
+
+    /// <summary>
     /// 移動方法
     /// </summary>
     private void Move()
@@ -46,9 +66,12 @@ public class Player : MonoBehaviour
         Transform camNew = cam;                                             // 新攝影機座標資訊
         camNew.eulerAngles = new Vector3(0, cam.eulerAngles.y, 0);          // 去掉 X 與 Z 角度
 
-        rig.velocity = ((camNew.forward * v + transform.right * h) * speed * Time.deltaTime) + transform.up * rig.velocity.y;       // 加速度 = 前方 * 前後值 + 右方 * 左右值 * 速度 * 1/60 + 上方 * 加速度上下值
+        transform.rotation = Quaternion.Lerp(transform.rotation, camNew.rotation, 0.5f * turnSpeed * Time.deltaTime);               // 角色的角度 = 角色，攝影機 角度的插值
 
-        ani.SetBool("跑步開關", rig.velocity.magnitude > 0);                // 動畫.設定布林值("參數名稱"，剛體.加速度.值 > 0)
+        rig.velocity = ((camNew.forward * v + camNew.right * h) * speed * Time.deltaTime) + transform.up * rig.velocity.y;          // 加速度 = 前方 * 前後值 + 右方 * 左右值 * 速度 * 1/60 + 上方 * 加速度上下值
+
+        ani.SetBool("跑步開關", rig.velocity.magnitude > 0.1f);             // 動畫.設定布林值("參數名稱"，剛體.加速度.值 > 0)
+
     }
 
     /// <summary>
@@ -60,5 +83,17 @@ public class Player : MonoBehaviour
         y -= Input.GetAxis("Mouse Y") * turn * Time.deltaTime;  // 取得滑鼠 Y 值
         y = Mathf.Clamp(y, camLimit.x, camLimit.y);             // 限制 Y
         cam.localEulerAngles = new Vector3(y , x, 0);           // 攝影機.角度 = (Y 值，X 值，0) * 旋轉速度 * 1/60
+    }
+
+    /// <summary>
+    /// 跳躍
+    /// </summary>
+    private void Jump()
+    {
+        if (Input.GetKeyDown(KeyCode.Space) && isGround)    // 如果 按下 空白建 並且 在地面上
+        {
+            isGround = false;                               // 不在地面上
+            rig.AddForce(Vector3.up * jump);                // 推力
+        }
     }
 }
