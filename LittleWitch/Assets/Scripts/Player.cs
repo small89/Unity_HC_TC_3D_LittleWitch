@@ -45,7 +45,7 @@ public class Player : MonoBehaviour
     [Header("jump扣除體力"), Range(0, 5000)]
     public float psjump = 15;
     [Header("停止體力"), Range(0, 5000)]
-    public float psR = 1;
+    public float psR = 10;
 
     private int jumpCount;
     /// <summary>
@@ -121,7 +121,7 @@ public class Player : MonoBehaviour
     /// </summary>
     private void Attack()
     {
-        if (Input.GetKeyDown(KeyCode.Mouse0) && mp >= attackCOST && !attacking)                                   //按左鍵
+        if (Input.GetKeyDown(KeyCode.Mouse0) && mp >= attackCOST && !attacking)             //按左鍵
         {
             StartCoroutine(AttackTimeControl());
         }
@@ -235,5 +235,16 @@ public class Player : MonoBehaviour
 
         ps = Mathf.Clamp(ps, 0, psmax);
         
+    }
+
+    /// <summary>
+    /// 受傷
+    /// </summary>
+    /// <param name="getDAMAGE">接受到受傷直</param>
+    public void Damage(float getDAMAGE)
+    {
+        ani.SetTrigger("受傷觸發");
+        hp -= getDAMAGE;
+        barHp.fillAmount = hp / hpmax;
     }
 }
