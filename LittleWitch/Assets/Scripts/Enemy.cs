@@ -21,6 +21,9 @@ public class Enemy : MonoBehaviour
     public float attackDelay = 1f;
     [Header("攻擊力"), Range(0, 2000)]
     public float attack = 10;
+    [Header("血量"), Range(0, 10000)]
+    public float hp = 500;
+
 
     private Animator ani;
     private Transform player;
@@ -45,12 +48,19 @@ public class Enemy : MonoBehaviour
         Gizmos.color = new Color(0, 0, 1, 0.3f);
         Gizmos.DrawSphere(transform.position, rangeAttack);
 
+        //攻擊判定
         Gizmos.color = new Color(0, 1, 1, 0.3f);
-        Gizmos.DrawSphere(transform.position + attackoffset, attackRadius);
+        Gizmos.DrawSphere(transform.position + attackoffset.z * transform.forward +transform.right * attackoffset.x + transform.up * attackoffset.y, attackRadius);
+
     }
 
     private void Update()
     {
+        //如果正在攻擊 跳出
+        if (ani.GetCurrentAnimatorStateInfo(0).IsName("Attack02")) return;
+
+       //if (ani.GetCurrentAnimatorStateInfo(0).IsName("GetHit")) return;
+
         Track();
     }
 
@@ -81,6 +91,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 攻擊
+    /// </summary>
     private void Attack()
     {
         if (timer >= attackCD)              //計時器>=冷卻
@@ -92,10 +105,36 @@ public class Enemy : MonoBehaviour
         else
         {
             timer += Time.deltaTime;        //累加時間
+
+            Vector3 pos = player.position;  //取得PLAYER座標
+            pos.y = transform.position.y;   //將Y軸改怪物Y軸
+            transform.LookAt(pos);          //面向(修改
         }
         nma.isStopped = true;
         ani.SetBool("走路開關", false);
 
+    }/// <summary>
+
+     /// 受傷
+     /// </summary>
+     /// <param name="getDAMAGE">接受到受傷直</param>
+    public void Damage(float getDAMAGE)
+    {
+        ani.SetTrigger("受傷觸發");
+        hp -= getDAMAGE;
+
+        if (hp <= 0) Dead();
+    }
+
+
+    /// <summary>
+    /// 死亡
+    /// </summary>
+    private void Dead()
+    {
+        hp = 0;
+        ani.SetBool("死亡開關", true);
+        enabled = false;
     }
 
     /// <summary>
@@ -106,8 +145,8 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSeconds(attackDelay);
 
         // 碰觸陣列 = 物理.球體(座標+判定，半徑)
-        Collider[] hits = Physics.OverlapSphere(transform.position + attackoffset, attackRadius, 1 << 9);
-        print(hits[0].name);
+        Collider[] hits = Physics.OverlapSphere(transform.position + transform.forward * attackoffset.z + transform.right * attackoffset.x + transform.up * attackoffset.y, attackRadius, 1 << 9);
+        //print(hits[0].name);
 
         if (hits.Length > 0)
         {
